@@ -17,7 +17,9 @@ class CiCompatibilityTests(unittest.TestCase):
         self.assertIn('horizon_revision', workflow)
         self.assertTrue(compat['horizon_revision'].isalnum())
         self.assertTrue(compat['horizon_mixins_revision'].isalnum())
-        self.assertEqual(compat['bbs_mc_version'], '1.20.1')
+        self.assertEqual(compat['bbs_mc_version'], '26.3')
+        self.assertEqual(compat['bbs_data_version'], 5023)
+        self.assertEqual(compat['hooks'], 1)
 
 
 if __name__ == '__main__':

@@ -178,7 +178,7 @@ fn orbit_camera_focuses_on_main_anchor_bone_and_chest_height() {
 }
 
 #[test]
-fn random_textures_and_1201_json_roundtrip_preserve_film_data() {
+fn random_textures_and_26_3_json_roundtrip_preserve_film_data() {
     let mut film = Film::default();
     let mut r2 = Replay::default();
     r2.uuid = "replay-2".into();
@@ -192,11 +192,11 @@ fn random_textures_and_1201_json_roundtrip_preserve_film_data() {
     assert_eq!(count, 2);
     assert!(pool.contains(film.replays[0].form.as_ref().unwrap().texture.as_ref().unwrap()));
 
-    let json = film.to_1201_json().unwrap();
-    let decoded = Film::from_1201_json(&json).unwrap();
+    let json = film.to_26_3_json().unwrap();
+    let decoded = Film::from_26_3_json(&json).unwrap();
     assert_eq!(decoded, film);
-    assert_eq!(decoded.mc_version, "1.20.1");
-    assert_eq!(decoded.data_version, 3465);
+    assert_eq!(decoded.mc_version, "26.3");
+    assert_eq!(decoded.data_version, 5023);
 }
 
 #[test]

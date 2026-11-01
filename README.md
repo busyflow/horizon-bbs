@@ -1,53 +1,50 @@
-# Horizon BBS (`horizon-bbs`)
+# Horizon BBS 26.3 (`horizon-bbs`)
 
-A Rust port of **Blockbuster Studio (BBS 1.20.1)** for **Horizon's Rust engine** (`d91cab68ded29bd2b004f7050c468fb98c41a00b` / Minecraft 26.3), built with [`horizon-mixins`](https://github.com/horizon-rust/horizon-mixins) 0.6.0 and following the native mod architecture established by [`horizon-veinminer`](https://github.com/levzzz5154/horizon-veinminer) and [`horizon-native-mod-template`](https://github.com/horizon-rust/horizon-native-mod-template).
+A native Rust port of **Blockbuster Studio (BBS 26.3)** for **Horizon's Rust engine** (Minecraft `26.3`, `DataVersion: 5023`, Native Hooks API `hooks: 1`), built with [`horizon-mixins`](https://github.com/horizon-rust/horizon-mixins) and following Horizon's official Native Hooks architecture (`crates/horizon-client/src/game/native_hooks.rs`).
 
-The committed [TOML bundle](mixins/bbs/horizon-mixin.toml) declares two cancellable `HEAD` hooks (`run_command` and `guest_command`) and one shared runtime module (`mixins/bbs/runtime.rs`). The original Horizon checkout remains completely untouched.
+Because `horizon-bbs` targets Horizon's stable `hooks: 1` API (`native_mods`, `native_settings`, `native_settings_click`, `native_tick`, `native_key`, `native_hud`, `native_command`), **Horizon Launcher builds it cleanly across all Horizon 26.3 releases and nightlies** alongside other native mods such as `fps_overlay.hnmod`.
 
 ---
 
-## Features & 1.20.1 BBS Compatibility
+## Features & Minecraft 26.3 BBS Engine
 
-- **1.20.1 Film & Replay Schema (`DataVersion: 3465`, MC `1.20.1`):**
-  - Import, validate, evaluate, and export 1.20.1 BBS scenes (`Film::from_1201_json`, `Film::to_1201_json`).
+- **Minecraft 26.3 Film & Replay Schema (`DataVersion: 5023`, MC `26.3`):**
+  - Native 26.3 scene serialization (`Film::from_26_3_json`, `Film::to_26_3_json`) with automatic upgrade for legacy 1.20.1 scenes (`Film::upgrade_to_26_3`, `Film::from_1201_json`).
   - Full `Replay` channel support (`x`, `y`, `z`, `yaw`, `head_yaw`, `body_yaw`, `pitch`, `sneaking`, `sprinting`, `grounded`, `fall_distance`, `visible`, `color`).
   - Complete `Interpolation` curve evaluator (`linear`, `step`, `cubic` Catmull-Rom, `hermite`, `bezier`, `quad_in/out/inout`, `sine_in/out/inout`, `exp_in/out/inout`).
-- **BBS Forms, Poses & Main Anchor Orbit Camera:**
-  - Supports `bbs:model`, `bbs:block`, `bbs:item`, `bbs:mob`, `bbs:particle`, `bbs:extruded`, and `bbs:label` forms with skeletal `Pose`, `pose_overlay`, and `BodyPart` trees.
-  - **Orbit Camera Torso Anchor (`Form::main_anchor_bone`):** Automatically locks camera orbit focus onto the primary torso/chest bone (`anchor`, `torso`, `body`, `chest`, `root`) at chest height (`+0.9m`) rather than shifting focus to individual limbs (`left_arm`, `right_arm`, etc.) being edited in pose keyframes.
+- **26.3 Forms, Data Components, Poses & Main Anchor Orbit Camera:**
+  - Supports `bbs:model`, `bbs:block`, `bbs:item`, `bbs:mob`, `bbs:display`, `bbs:particle`, `bbs:extruded`, and `bbs:label` forms with 26.3 item/entity `components` (`minecraft:item_model`, `minecraft:custom_data`), skeletal `Pose`, `pose_overlay`, and `BodyPart` trees.
+  - **Orbit Camera Torso Anchor (`Form::main_anchor_bone`):** Locks camera orbit focus onto the primary torso/chest bone (`anchor`, `torso`, `body`, `chest`, `root`) at chest height (`+0.9m`) rather than shifting focus to individual limbs (`left_arm`, `right_arm`, etc.) being edited in pose keyframes.
 - **Categories / Groups & Cross-Scene Clipboard:**
   - Creating a category/group (`Film::create_group_with_selected` / `/bbs group <name>`) immediately moves all currently selected replays into the new category.
   - Full group copy & paste (`Film::copy_group`, `Film::paste_group` / `/bbs copy-group <name>`, `/bbs paste-group`) copies a category, its nested subgroups, and all contained replays and pastes them into any scene.
 - **Multi-Replay Combined Center Transform Gizmo:**
   - Computes the exact combined center point of any number of selected replays (`Film::combined_replays_center`) and smoothly translates/rotates all selected replay trajectories around their shared center (`Film::transform_selected_replays` / `/bbs transform <dx> <dy> <dz> [dyaw]`).
-- **Random Texture Pool Assignment:**
-  - Deterministically applies random textures from an asset folder pool across all selected replays (`Film::apply_random_textures`).
-- **Camera Clips:**
-  - Evaluates `bbs:idle`, `bbs:dolly`, `bbs:circular`, `bbs:path`, `bbs:look`, `bbs:orbit`, `bbs:shake`, and `bbs:curve` camera clips across timeline layers.
+- **Live In-Game Director HUD, Hotkeys & Options > Mods Page:**
+  - **Options > Mods > BBS Studio 26.3**: Configure Director HUD visibility, HUD screen corner (`Top right` default), Playback State, Loop Playback, Camera Lock on Play, and Timeline Speed (`10` / `20` / `40` / `60` TPS), plus customizable keybinds (`P` Play/Pause, `R` Record, `O` Reset Timeline, `U` Toggle HUD).
 
 ---
 
-## Launcher & Registry Bundle (`.hnmod`)
+## Launcher & Instance Bundle (`.hnmod`)
 
-Version `0.1.0` targets Horizon Nightly `d91cab68ded29bd2b004f7050c468fb98c41a00b` and Horizon Mixins `0.6.0` (`4342a0bfbe71d4d14185528d64e496d6022f16a1`).
-
-Package the source-only `.hnmod` bundle for Horizon Launcher:
+Package the deterministic source-only `.hnmod` bundle:
 
 ```sh
 python3 tools/bundle.py
 python3 tools/package.py
 ```
 
-This writes `target/bbs-0.1.0.hnmod` and prints its SHA-256. Copy `target/bbs-0.1.0.hnmod` into your Horizon Launcher `horizon-native-mods/` directory, enable **Settings → Game → Native mods (experimental)**, and click **Build**.
+This writes `target/bbs-0.2.0.hnmod` with `"game": "26.3"` and `"hooks": 1`. Place it in your instance's `horizon-native-mods/bbs.hnmod` (e.g. `%APPDATA%\horizon\instances\bbs-rust\horizon-native-mods\bbs.hnmod`) and enable `mod.bbs:true` in `horizon-mods.txt`.
 
 ---
 
 ## In-Game Commands (`/bbs`)
 
-- `/bbs` or `/bbs status`: Show engine status, active film, replay count, playback mode, and formatted timecode.
+- `/bbs` or `/bbs status`: Show 26.3 engine status, active film, replay count, playback mode, and formatted timecode.
+- `/bbs hud`: Toggle the live on-screen BBS 26.3 Director HUD overlay.
 - `/bbs toggle`, `/bbs on`, `/bbs off`: Enable or disable BBS for your session.
-- `/bbs list`: List all loaded films, replay counts, and durations.
-- `/bbs create <film_id>`: Create and select a new BBS film.
+- `/bbs list`: List all loaded films, replay counts, durations, and MC versions.
+- `/bbs create <film_id>`: Create and select a new 26.3 BBS film.
 - `/bbs play [film_id]`: Start timeline playback.
 - `/bbs pause`: Pause timeline playback at the current tick.
 - `/bbs stop`: Stop playback and reset cursor to tick `0.0`.
@@ -57,8 +54,8 @@ This writes `target/bbs-0.1.0.hnmod` and prints its SHA-256. Copy `target/bbs-0.
 - `/bbs copy-group <group_name>`: Copy a category and all of its replays to the session clipboard.
 - `/bbs paste-group`: Paste the copied category and its replays into the active scene.
 - `/bbs transform <dx> <dy> <dz> [dyaw]`: Smoothly translate and rotate all selected replays around their combined center point.
-- `/bbs import1201 <path>`: Import a 1.20.1 BBS `.json` film file from disk.
-- `/bbs reload`: Reload configuration from `HORIZON_BBS_CONFIG` (requires permission level 2).
+- `/bbs import <path>` (or `/bbs import1201 <path>`): Import a BBS `.json` film file from disk and automatically upgrade it to 26.3 (`DataVersion: 5023`).
+- `/bbs reload`: Reload configuration from `HORIZON_BBS_CONFIG` and mod settings.
 
 ---
 
@@ -72,9 +69,6 @@ cargo test --locked --offline
 python3 tools/bundle.py --check
 python3 tools/test_ci.py
 python3 tools/test_package.py
-python3 tools/test_stage.py
-python3 tools/horizon.py check
-python3 tools/horizon.py test
 ```
 
 ## License

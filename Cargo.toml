@@ -1,10 +1,10 @@
 [package]
 name = "horizon-bbs"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.95"
 license = "MIT"
-description = "Blockbuster Studio (BBS 1.20.1) cinematic director, keyframe replay, and camera engine port for Horizon"
+description = "Blockbuster Studio (BBS 26.3) cinematic director, keyframe replay, and camera engine for Horizon"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

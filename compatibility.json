@@ -1,14 +1,14 @@
 {
   "horizon_repository": "https://github.com/horizon-rust/horizon",
-  "horizon_revision": "d91cab68ded29bd2b004f7050c468fb98c41a00b",
-  "bbs_mc_version": "1.20.1",
-  "bbs_data_version": 3465,
+  "horizon_revision": "6f8c7a0e5d531d3834c4d0be4659a1db8e7e5c2a",
+  "bbs_mc_version": "26.3",
+  "bbs_data_version": 5023,
+  "hooks": 1,
   "source_sha256": {
-    "crates/horizon-client/src/game.rs": "b99ccd23927aa4de5edf44322a0a4706b76d60fc109ace893899d9258cbf2c43",
-    "crates/horizon-client/src/game/commands.rs": "e3fa89a1505d840e21f606cae98046e959a0102f321d4b5d6748d638c8e4a749",
-    "crates/horizon-client/src/game/lan_actions.rs": "43dd8150788524a664c9bfc81c0bd76807aadd4941b3b8a9ccf6178637620b9e"
+    "crates/horizon-client/src/game.rs": "ce7caf8dd10addd64596700950c9a024c7f5c7e9276ff39ea1ad747c9b7cbe62",
+    "crates/horizon-client/src/game/native_hooks.rs": "d13bdf1e28b02e22bb1c5fa645b2b5281c77b6d4628967cf88f6599636e05e1b"
   },
   "mixin_schema": 6,
   "horizon_mixins_repository": "https://github.com/horizon-rust/horizon-mixins",
-  "horizon_mixins_revision": "4342a0bfbe71d4d14185528d64e496d6022f16a1"
+  "horizon_mixins_revision": "0d6b103c70633d8fd9443d8d0acd3aadaacedb06"
 }

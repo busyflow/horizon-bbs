@@ -1,0 +1,1 @@
+super::bbs::list(mods);

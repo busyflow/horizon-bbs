@@ -35,12 +35,8 @@ fn main() {
             .map(|n| n.as_u64().unwrap() as usize)
             .collect();
         assert_eq!(p["kind"], "HEAD");
-        assert_eq!(p["cancellable"], true);
         let b = block(&mut tree.items, &node);
-        assert!(
-            matches!(b.stmts.first(), Some(syn::Stmt::Expr(syn::Expr::If(_), _))),
-            "cancellable HEAD missing"
-        );
+        assert!(!b.stmts.is_empty(), "HEAD injection statement missing");
         b.stmts.remove(0);
     }
     for m in plan["modules"].as_array().unwrap() {

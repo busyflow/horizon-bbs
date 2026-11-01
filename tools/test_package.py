@@ -27,16 +27,30 @@ class PackageTests(unittest.TestCase):
         compat = json.loads((ROOT / 'compatibility.json').read_text(encoding='utf-8'))
         project = tomllib.loads((ROOT / 'Cargo.toml').read_text(encoding='utf-8'))['package']
         expected = {'horizon-native.json'} | {
-            f'mixins/bbs/{name}' for name in
-            ('command.rs', 'guest-command.rs', 'horizon-mixin.toml', 'runtime.rs')
+            f'mixins/bbs/{name}' for name in (
+                'click.rs',
+                'command.rs',
+                'horizon-mixin.toml',
+                'hud.rs',
+                'key.rs',
+                'list.rs',
+                'runtime.rs',
+                'settings.rs',
+                'tick.rs',
+            )
         }
         with zipfile.ZipFile(first['file']) as archive:
             self.assertEqual(set(archive.namelist()), expected)
             self.assertEqual(len(archive.namelist()), len(expected))
             self.assertIsNone(archive.testzip())
             self.assertEqual(json.loads(archive.read('horizon-native.json')), {
-                'schema': 1, 'id': 'bbs', 'version': project['version'], 'game': '26.3',
-                'horizon': compat['horizon_revision'], 'mixins': compat['horizon_mixins_revision'],
+                'schema': 1,
+                'id': 'bbs',
+                'version': project['version'],
+                'game': '26.3',
+                'hooks': compat['hooks'],
+                'horizon': compat['horizon_revision'],
+                'mixins': compat['horizon_mixins_revision'],
             })
             for info in archive.infolist():
                 self.assertEqual(info.date_time, (2026, 1, 1, 0, 0, 0))

@@ -1,37 +1,55 @@
+schema_version = 6
+
 [mod]
 id = "bbs"
-version = "0.1.0"
-priority = 100
+version = "0.2.0"
 
 [compatibility]
-horizon_revision = "d91cab68ded29bd2b004f7050c468fb98c41a00b"
+horizon_revision = "6f8c7a0e5d531d3834c4d0be4659a1db8e7e5c2a"
 
-[[module]]
-id = "runtime"
-file = "crates/horizon-client/src/game.rs"
+[[modules]]
 name = "bbs"
+target = "horizon_client::game"
 source = "runtime.rs"
 
-[[injection]]
-id = "command"
-kind = "HEAD"
-cancellable = true
-target = "horizon_client::game::commands::Game<'_>::run_command"
-helper = "command.rs"
-bindings = [
-  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
-  { name = "command", ty = "&str", value = "command" },
-]
+[[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_mods"
+at = "HEAD"
+source = "list.rs"
+order = 0
 
-[[injection]]
-id = "guest-command"
-kind = "HEAD"
-cancellable = true
-target = "horizon_client::game::lan_actions::Game<'_>::guest_command"
-helper = "guest-command.rs"
-bindings = [
-  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
-  { name = "host", ty = "&mut crate::game::lan::LanHost", value = "&mut *host" },
-  { name = "conn", ty = "u32", value = "conn" },
-  { name = "command", ty = "&str", value = "command" },
-]
+[[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_settings"
+at = "HEAD"
+source = "settings.rs"
+order = 0
+
+[[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_settings_click"
+at = "HEAD"
+source = "click.rs"
+order = 0
+
+[[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_tick"
+at = "HEAD"
+source = "tick.rs"
+order = 0
+
+[[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_key"
+at = "HEAD"
+source = "key.rs"
+order = 0
+
+[[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_hud"
+at = "HEAD"
+source = "hud.rs"
+order = 0
+
+[[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_command"
+at = "HEAD"
+source = "command.rs"
+order = 0

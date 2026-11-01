@@ -18,8 +18,15 @@ def package():
     mixin = tomllib.loads((ROOT / 'mixins/bbs/horizon-mixin.toml').read_text(encoding='utf-8'))
     assert mixin['mod']['version'] == project['version']
     assert mixin['compatibility']['horizon_revision'] == compat['horizon_revision']
-    manifest = dict(schema=1, id='bbs', version=project['version'], game='26.3',
-                    horizon=compat['horizon_revision'], mixins=compat['horizon_mixins_revision'])
+    manifest = dict(
+        schema=1,
+        id='bbs',
+        version=project['version'],
+        game='26.3',
+        hooks=compat['hooks'],
+        horizon=compat['horizon_revision'],
+        mixins=compat['horizon_mixins_revision'],
+    )
     files = {'horizon-native.json': (json.dumps(manifest, indent=2, sort_keys=True) + '\n').encode('utf-8')}
     for path in sorted((ROOT / 'mixins/bbs').iterdir()):
         if path.suffix in ('.rs', '.toml'):

@@ -1,10 +1,12 @@
-// BBS (Blockbuster Studio) 1.20.1 Core Engine for Horizon.
-// Compatible with Minecraft 1.20.1 BBS films, replays, forms, keyframes, and camera clips.
+// BBS (Blockbuster Studio) 26.3 Core Engine for Horizon.
+// Native Minecraft 26.3 (`DataVersion: 5023`) film, replay, form, keyframe, and camera clip engine
+// with seamless backward-compatible import/upgrade support for Minecraft 1.20.1 (`DataVersion: 3465`).
 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
-pub const BBS_MC_VERSION: &str = "1.20.1";
+pub const BBS_MC_VERSION: &str = "26.3";
+pub const BBS_DATA_VERSION_26_3: u32 = 5023;
 pub const BBS_DATA_VERSION_1201: u32 = 3465;
 pub const MAX_KEYFRAMES_PER_CHANNEL: usize = 65_536;
 pub const MAX_REPLAYS_PER_FILM: usize = 2_048;
@@ -290,7 +292,7 @@ fn default_true() -> bool {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Form {
-    /// BBS 1.20.1 form ID (`bbs:model`, `bbs:block`, `bbs:item`, `bbs:mob`, `bbs:particle`, `bbs:extruded`, `bbs:label`).
+    /// BBS 26.3 form ID (`bbs:model`, `bbs:block`, `bbs:item`, `bbs:mob`, `bbs:display`, `bbs:particle`, `bbs:extruded`, `bbs:label`).
     pub id: String,
     #[serde(default = "default_true")]
     pub visible: bool,
@@ -310,6 +312,9 @@ pub struct Form {
     pub block_state: Option<String>,
     #[serde(default)]
     pub item_stack: Option<String>,
+    /// Minecraft 26.3 item/entity data components (`minecraft:item_model`, `minecraft:custom_data`, etc.).
+    #[serde(default)]
+    pub components: BTreeMap<String, String>,
     #[serde(default)]
     pub mob_id: Option<String>,
     #[serde(default)]
@@ -347,6 +352,7 @@ impl Default for Form {
             texture: Some("assets:textures/entity/steve.png".into()),
             block_state: None,
             item_stack: None,
+            components: BTreeMap::new(),
             mob_id: None,
             mob_nbt: None,
             color: default_color(),
@@ -641,7 +647,7 @@ impl Default for CameraPoint {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CameraClip {
-    /// BBS 1.20.1 clip type (`bbs:idle`, `bbs:dolly`, `bbs:circular`, `bbs:path`, `bbs:orbit`, etc.).
+    /// BBS 26.3 clip type (`bbs:idle`, `bbs:dolly`, `bbs:circular`, `bbs:path`, `bbs:orbit`, etc.).
     pub id: String,
     #[serde(default)]
     pub kind: CameraClipKind,
@@ -818,7 +824,7 @@ fn default_mc_version() -> String {
 }
 
 fn default_data_version() -> u32 {
-    BBS_DATA_VERSION_1201
+    BBS_DATA_VERSION_26_3
 }
 
 impl Default for Film {
@@ -877,6 +883,26 @@ impl Film {
             }
         }
         Ok(())
+    }
+
+    /// Upgrade a film imported from Minecraft 1.20.1 (`DataVersion: 3465`) to Minecraft 26.3 (`DataVersion: 5023`).
+    pub fn upgrade_to_26_3(&mut self) {
+        self.mc_version = BBS_MC_VERSION.into();
+        self.data_version = BBS_DATA_VERSION_26_3;
+    }
+
+    pub fn from_26_3_json(source: &str) -> Result<Self, String> {
+        let mut film: Self = serde_json::from_str(source).map_err(|e| e.to_string())?;
+        film.validate()?;
+        film.upgrade_to_26_3();
+        Ok(film)
+    }
+
+    pub fn to_26_3_json(&self) -> Result<String, String> {
+        self.validate()?;
+        let mut copy = self.clone();
+        copy.upgrade_to_26_3();
+        serde_json::to_string_pretty(&copy).map_err(|e| e.to_string())
     }
 
     pub fn from_1201_json(source: &str) -> Result<Self, String> {
@@ -1109,6 +1135,8 @@ pub struct Settings {
     pub enabled: bool,
     #[serde(default = "default_true")]
     pub hud_overlay: bool,
+    #[serde(default)]
+    pub hud_corner: u8,
     #[serde(default = "default_true")]
     pub lock_camera_on_play: bool,
     #[serde(default)]
@@ -1126,6 +1154,7 @@ impl Default for Settings {
         Self {
             enabled: true,
             hud_overlay: true,
+            hud_corner: 1, // Top-Right default so it doesn't overlap Top-Left FPS Overlay
             lock_camera_on_play: true,
             loop_playback: false,
             ticks_per_second: default_tick_rate(),
@@ -1338,7 +1367,8 @@ impl Runtime {
         s.last_world_tick = Some(player.world_tick);
 
         if matches!(s.mode, PlaybackMode::Playing | PlaybackMode::Recording { .. }) {
-            s.cursor_tick += delta;
+            let speed_scale = (config.settings.ticks_per_second as f64) / 20.0;
+            s.cursor_tick += delta * speed_scale;
         }
 
         let duration = film.duration_ticks() as f64;
@@ -1388,6 +1418,49 @@ impl Runtime {
             camera_applied,
             recorded_sample,
         })
+    }
+
+    pub fn hud_lines(&self, actor: ActorId, config: &Config) -> Vec<(String, u32)> {
+        let s = self.session(actor);
+        let mode_badge = match s.mode {
+            PlaybackMode::Playing => ("PLAY", 0x55FF55),
+            PlaybackMode::Paused => ("PAUSE", 0xFFFF55),
+            PlaybackMode::Recording { .. } => ("REC", 0xFF5555),
+            PlaybackMode::Stopped => ("IDLE", 0xAAAAAA),
+        };
+        let mut lines = Vec::with_capacity(4);
+        let timecode = Self::format_timecode(s.cursor_tick, config.settings.ticks_per_second);
+        lines.push((
+            format!("BBS 26.3 [{}] {}", mode_badge.0, s.active_film),
+            mode_badge.1,
+        ));
+        lines.push((format!("Time: {timecode}"), 0xFFFFFF));
+        if let Some(film) = config.films.get(&s.active_film) {
+            let evaluated = film.evaluate_replays(s.cursor_tick);
+            if let Some(primary) = evaluated.first() {
+                lines.push((
+                    format!(
+                        "Actor {}: {:.1}, {:.1}, {:.1} (yaw {:.0})",
+                        primary.label,
+                        primary.position[0],
+                        primary.position[1],
+                        primary.position[2],
+                        primary.yaw
+                    ),
+                    0x88DDFF,
+                ));
+            }
+            if let Some(cam) = film.evaluate_camera(s.cursor_tick) {
+                lines.push((
+                    format!(
+                        "Cam: {:.1}, {:.1}, {:.1} FOV {:.0}",
+                        cam.position[0], cam.position[1], cam.position[2], cam.fov
+                    ),
+                    0xFFCC66,
+                ));
+            }
+        }
+        lines
     }
 
     pub fn format_timecode(tick: f64, tps: u32) -> String {
