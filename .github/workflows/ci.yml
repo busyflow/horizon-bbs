@@ -1,0 +1,49 @@
+name: BBS
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install 1.95.0 --profile minimal --component rustfmt --component clippy
+      - run: cargo fetch --locked
+      - run: cargo fmt --all --check
+      - run: rustfmt --edition 2024 --check native/horizon.rs
+      - run: cargo clippy --all-targets --locked --offline -- -D warnings
+      - run: cargo test --locked --offline
+      - run: python3 tools/test_ci.py
+      - run: python3 tools/bundle.py --check
+      - run: python3 tools/test_package.py
+      - run: cargo fmt --manifest-path tools/audit/Cargo.toml --check
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install 1.95.0 --profile minimal
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Horizon Mixins
+        run: |
+          BBS_MIXINS_REPO=$(python3 -c 'import json; print(json.load(open("compatibility.json"))["horizon_mixins_repository"])')
+          git clone "$BBS_MIXINS_REPO" ../horizon-mixins
+          BBS_MIXINS_REV=$(python3 -c 'import json; print(json.load(open("compatibility.json"))["horizon_mixins_revision"])')
+          git -C ../horizon-mixins checkout "$BBS_MIXINS_REV"
+          cargo fetch --locked --manifest-path ../horizon-mixins/Cargo.toml
+          cargo fetch --locked --manifest-path tools/audit/Cargo.toml
+      - name: Export pinned Horizon source
+        run: |
+          BBS_HORIZON_REPO=$(python3 -c 'import json; print(json.load(open("compatibility.json"))["horizon_repository"])')
+          BBS_HORIZON_REV=$(python3 -c 'import json; print(json.load(open("compatibility.json"))["horizon_revision"])')
+          git clone --filter=blob:none "$BBS_HORIZON_REPO" ../horizon
+          git -C ../horizon checkout "$BBS_HORIZON_REV"
+          python3 tools/horizon.py stage > stage.json
+          BBS_STAGE=$(python3 -c 'import json; print(json.load(open("stage.json"))["stage"])')
+          cargo fetch --locked --manifest-path "$BBS_STAGE/Cargo.toml"
+      - run: python3 tools/test_stage.py
+      - run: python3 tools/horizon.py check
+      - run: python3 tools/horizon.py test

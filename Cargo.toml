@@ -1,0 +1,11 @@
+[package]
+name = "horizon-bbs"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+description = "Blockbuster Studio (BBS 1.20.1) cinematic director, keyframe replay, and camera engine port for Horizon"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

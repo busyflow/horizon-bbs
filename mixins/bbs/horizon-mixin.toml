@@ -1,0 +1,37 @@
+[mod]
+id = "bbs"
+version = "0.1.0"
+priority = 100
+
+[compatibility]
+horizon_revision = "d91cab68ded29bd2b004f7050c468fb98c41a00b"
+
+[[module]]
+id = "runtime"
+file = "crates/horizon-client/src/game.rs"
+name = "bbs"
+source = "runtime.rs"
+
+[[injection]]
+id = "command"
+kind = "HEAD"
+cancellable = true
+target = "horizon_client::game::commands::Game<'_>::run_command"
+helper = "command.rs"
+bindings = [
+  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+  { name = "command", ty = "&str", value = "command" },
+]
+
+[[injection]]
+id = "guest-command"
+kind = "HEAD"
+cancellable = true
+target = "horizon_client::game::lan_actions::Game<'_>::guest_command"
+helper = "guest-command.rs"
+bindings = [
+  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+  { name = "host", ty = "&mut crate::game::lan::LanHost", value = "&mut *host" },
+  { name = "conn", ty = "u32", value = "conn" },
+  { name = "command", ty = "&str", value = "command" },
+]
