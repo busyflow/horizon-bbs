@@ -37,6 +37,7 @@ class PackageTests(unittest.TestCase):
                 'runtime.rs',
                 'settings.rs',
                 'tick.rs',
+                'wheel.rs',
             )
         }
         with zipfile.ZipFile(first['file']) as archive:

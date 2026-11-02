@@ -43,6 +43,12 @@ source = "key.rs"
 order = 0
 
 [[injections]]
+target = "horizon_client::game::native_hooks::Game<'_>::native_wheel"
+at = "HEAD"
+source = "wheel.rs"
+order = 0
+
+[[injections]]
 target = "horizon_client::game::native_hooks::Game<'_>::native_hud"
 at = "HEAD"
 source = "hud.rs"
