@@ -1,61 +1,161 @@
-schema_version = 6
-
-[mod]
-id = "bbs"
-version = "0.2.0"
-
 [compatibility]
 horizon_revision = "6f8c7a0e5d531d3834c4d0be4659a1db8e7e5c2a"
 
-[[modules]]
+[mod]
+id = "bbs"
+priority = 100
+version = "0.2.0"
+
+[[module]]
+file = "crates/horizon-client/src/game.rs"
+id = "runtime"
 name = "bbs"
-target = "horizon_client::game"
 source = "runtime.rs"
 
-[[injections]]
+[[injection]]
+helper = "list.rs"
+id = "list"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_mods"
-at = "HEAD"
-source = "list.rs"
-order = 0
 
-[[injections]]
+[[injection.bindings]]
+name = "mods"
+ty = "&mut Vec<crate::game::native_hooks::NativeMod>"
+value = "&mut *mods"
+
+[[injection]]
+helper = "settings.rs"
+id = "settings"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_settings"
-at = "HEAD"
-source = "settings.rs"
-order = 0
 
-[[injections]]
+[[injection.bindings]]
+name = "game"
+ty = "&mut crate::game::Game<'_>"
+value = "&mut *self"
+
+[[injection.bindings]]
+name = "mod_id"
+ty = "&str"
+value = "mod_id"
+
+[[injection.bindings]]
+name = "buttons"
+ty = "&mut Vec<String>"
+value = "&mut *buttons"
+
+[[injection]]
+helper = "click.rs"
+id = "click"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_settings_click"
-at = "HEAD"
-source = "click.rs"
-order = 0
 
-[[injections]]
+[[injection.bindings]]
+name = "game"
+ty = "&mut crate::game::Game<'_>"
+value = "&mut *self"
+
+[[injection.bindings]]
+name = "mod_id"
+ty = "&str"
+value = "mod_id"
+
+[[injection.bindings]]
+name = "button"
+ty = "usize"
+value = "button"
+
+[[injection]]
+helper = "tick.rs"
+id = "tick"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_tick"
-at = "HEAD"
-source = "tick.rs"
-order = 0
 
-[[injections]]
+[[injection.bindings]]
+name = "game"
+ty = "&mut crate::game::Game<'_>"
+value = "&mut *self"
+
+[[injection]]
+helper = "key.rs"
+id = "key"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_key"
-at = "HEAD"
-source = "key.rs"
-order = 0
 
-[[injections]]
+[[injection.bindings]]
+name = "game"
+ty = "&mut crate::game::Game<'_>"
+value = "&mut *self"
+
+[[injection.bindings]]
+name = "key"
+ty = "&str"
+value = "key"
+
+[[injection.bindings]]
+name = "pressed"
+ty = "bool"
+value = "pressed"
+
+[[injection]]
+helper = "wheel.rs"
+id = "wheel"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_wheel"
-at = "HEAD"
-source = "wheel.rs"
-order = 0
 
-[[injections]]
+[[injection.bindings]]
+name = "game"
+ty = "&mut crate::game::Game<'_>"
+value = "&mut *self"
+
+[[injection.bindings]]
+name = "steps"
+ty = "f32"
+value = "steps"
+
+[[injection.bindings]]
+name = "claimed"
+ty = "&mut bool"
+value = "&mut *claimed"
+
+[[injection]]
+helper = "hud.rs"
+id = "hud"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_hud"
-at = "HEAD"
-source = "hud.rs"
-order = 0
 
-[[injections]]
+[[injection.bindings]]
+name = "game"
+ty = "&mut crate::game::Game<'_>"
+value = "&mut *self"
+
+[[injection.bindings]]
+name = "batch"
+ty = "&mut horizon_client::hud::HudBatch"
+value = "&mut *batch"
+
+[[injection.bindings]]
+name = "corners"
+ty = "&mut horizon_client::extras_hud::Corners"
+value = "&mut *corners"
+
+[[injection]]
+helper = "command.rs"
+id = "command"
+kind = "HEAD"
 target = "horizon_client::game::native_hooks::Game<'_>::native_command"
-at = "HEAD"
-source = "command.rs"
-order = 0
+
+[[injection.bindings]]
+name = "game"
+ty = "&mut crate::game::Game<'_>"
+value = "&mut *self"
+
+[[injection.bindings]]
+name = "command"
+ty = "&str"
+value = "command"
+
+[[injection.bindings]]
+name = "ran"
+ty = "&mut bool"
+value = "&mut *ran"
