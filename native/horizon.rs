@@ -167,11 +167,11 @@ impl Host for Native<'_, '_> {
 
 pub(super) fn list(mods: &mut Vec<NativeMod>) {
     let keys = [
-        ("menu", "Open BBS Studio Menu", "key.keyboard.right.shift"),
-        ("play_pause", "Play / Pause Film", "key.keyboard.p"),
-        ("record", "Record Active Replay", "key.keyboard.r"),
-        ("scrub_zero", "Reset Timeline to 0", "key.keyboard.o"),
-        ("hud", "Toggle Director HUD", "key.keyboard.u"),
+        ["menu", "Open BBS Studio Menu", "key.keyboard.right.shift"],
+        ["play_pause", "Play / Pause Film", "key.keyboard.p"],
+        ["record", "Record Active Replay", "key.keyboard.r"],
+        ["scrub_zero", "Reset Timeline to 0", "key.keyboard.o"],
+        ["hud", "Toggle Director HUD", "key.keyboard.u"],
     ];
     mods.push(NativeMod {
         id: ID.into(),
@@ -361,7 +361,7 @@ fn execute_menu_action(game: &mut Game<'_>, state: &mut State, action_idx: usize
                 r.label = format!("Actor {} ({})", idx + 1, preset.1);
                 r.form = Some(Form {
                     id: preset.0.into(),
-                    model: Some(preset.1.into()),
+                    model: preset.1.into(),
                     texture: Some(preset.2.into()),
                     ..Form::default()
                 });
